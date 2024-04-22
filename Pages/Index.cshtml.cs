@@ -1,12 +1,11 @@
 using Models;
+using Services.ChatGPT;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Suggestify.Pages;
-
 public class IndexModel : PageModel
 {
-
     [BindProperty]
     public Parameter Parameter { get; set; }
 
@@ -15,17 +14,25 @@ public class IndexModel : PageModel
     public IndexModel(ILogger<IndexModel> logger)
     {
         _logger = logger;
+        Parameter = new();
     }
 
     public void OnGet()
     {
-      Parameter = new Parameter();
+        _logger.LogInformation("OnGet");
     }
 
-    public IActionResult OnPost()
+    public async Task<IActionResult> OnPost()
     {
-        Console.WriteLine(Parameter.Message);
+
+        OpenAIClient openAIClient= new();
+        string? prompt = Parameter.Message;
+        string? response = await openAIClient.GetResponse(prompt);
+        if (response != null)
+            _logger.LogInformation(response);
+        else
+            _logger.LogWarning("No response");
+
         return RedirectToPage("/Index");
     }
-
 }
